@@ -1,5 +1,5 @@
 {
-  "name": "htmlanalyzer",
+  "name": "@ynetlabo/htmlanalyzer",
   "version": "0.2.00",
   "description": "a tool for the npm package to easily analysis a html document.",
   "main": "dist/index.js",
