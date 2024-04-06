@@ -1,5 +1,4 @@
-import { AxiosResponse } from "axios";
-import { parse, HTMLElement } from "node-html-parser";
+import { HTMLElement } from "node-html-parser";
 
 /**
  * AnalyzedDoc
@@ -27,32 +26,22 @@ export class AnalyzedDoc {
     this.parsedHtml = undefined;
     this.selectedElements = new Array<HTMLElement>();
   }
+}
 
-  toTitleTextArray(): Array<TitleText> {
-    let results: Array<TitleText> = new Array<TitleText>();
-    let isKey: boolean = true;
+export class PostDoc {
+  date?: Date;
+  title: string;
+  description: string;
 
-    let result: TitleText;
-    this.selectedElements?.forEach((el) => {
-      if (isKey) {
-        result = new TitleText(el.innerText.trim(), "");
-        isKey = false;
-      } else {
-        result.text = el.innerText.trim();
-        isKey = true;
-        results.push(result);
-      }
-    });
-    return results;
+  constructor(title: string, description: string, date: Date) {
+    this.title = title;
+    this.description = description;
+    this.date = date;
   }
 }
 
-export class TitleText {
-  title: string;
-  text: string;
-
-  constructor(title: string, text: string) {
-    this.title = title;
-    this.text = text;
+export class ArticleDoc extends PostDoc {
+  constructor(title: string, description: string, date: Date) {
+    super(title, description, date);
   }
 }

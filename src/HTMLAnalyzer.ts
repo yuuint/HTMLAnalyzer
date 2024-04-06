@@ -1,18 +1,90 @@
 import axios from "axios";
-import { AnalyzedDoc, TitleText } from "./AnalyzedDoc";
+import { AnalyzedDoc, ArticleDoc, PostDoc } from "./AnalyzedDoc";
+import { DateTime, DateTimeMaybeValid } from "luxon";
 import { parse, HTMLElement } from "node-html-parser";
-import { ArrayTypeNode } from "typescript";
 
+export class AnalyzerOptions {
+  selectQuery: string;
+  titleSelector?: string;
+  descriptionSelector?: string;
+  dateSelector?: string;
+  constructor(selectQuery: string) {
+    this.selectQuery = selectQuery;
+  }
+}
 export class HTMLAnalyzer {
   static async getAnalyzedDocByUrl(
     targetUrl: string,
-    selectQuery: string
-  ): Promise<AnalyzedDoc> {
+    options: AnalyzerOptions,
+    postDocAdapter: Function
+  ): Promise<PostDoc> {
     let analyzedDoc = await this.getHtmlDocByUrl(targetUrl);
     analyzedDoc.parsedHtml = this.getParsedHtml(analyzedDoc.siteData);
-    analyzedDoc.selectedElements =
-      analyzedDoc.parsedHtml.querySelectorAll(selectQuery);
-    return analyzedDoc;
+    analyzedDoc.selectedElements = analyzedDoc.parsedHtml.querySelectorAll(
+      options.selectQuery
+    );
+
+    return postDocAdapter(analyzedDoc.selectedElements, options);
+  }
+
+  static DlTagAdapter(elements: Array<HTMLElement>): Array<ArticleDoc> {
+    let resDocs: Array<ArticleDoc> = new Array<ArticleDoc>();
+    elements.forEach((elDl) => {
+      let resDoc: ArticleDoc;
+      elDl.childNodes.forEach((definition) => {
+        if (definition.rawTagName == "dt") {
+          resDoc = new ArticleDoc(
+            definition.innerText.trim(),
+            "",
+            HTMLAnalyzer.guessDate(definition.innerText)
+          );
+        } else if (definition.rawTagName == "dd") {
+          resDoc.description = definition.innerText.trim();
+          resDocs.push(resDoc);
+        }
+      });
+    });
+    return resDocs;
+  }
+
+  static CustomBlockAdapter(
+    elements: Array<HTMLElement>,
+    options: AnalyzerOptions
+  ): Array<ArticleDoc> {
+    let resDocs: Array<ArticleDoc> = new Array<ArticleDoc>();
+    elements.forEach((el) => {
+      let title =
+        el.querySelector(options.titleSelector ?? "")?.innerText.trim() ?? "";
+      let description =
+        el.querySelector(options.descriptionSelector ?? "")?.innerText.trim() ??
+        "";
+      let date = HTMLAnalyzer.guessDate(
+        el.querySelector(options.dateSelector ?? "")?.innerText ?? ""
+      );
+      resDocs.push(new ArticleDoc(title, description, date));
+    });
+
+    return resDocs;
+  }
+
+  private static guessDate(sentence: string): Date {
+    const dateRegexFormats: Array<DateRegexFormat> = [
+      new DateRegexFormat("[0-9]{4}.[0-9]{1,2}.[0-9]{1,2}", "yyyy.M.d"),
+    ];
+
+    // let matchStr: string = "";
+    let res: DateTimeMaybeValid = DateTime.now();
+    dateRegexFormats.forEach((dateRegexFormat) => {
+      let regex = new RegExp(dateRegexFormat.regex);
+      let finds: Array<string> = regex.exec(sentence) ?? [];
+      finds.forEach((find) => {
+        res = DateTime.fromFormat(find, dateRegexFormat.dateFormat);
+        if (res) {
+          return res;
+        }
+      });
+    });
+    return res.toJSDate();
   }
 
   private static async getHtmlDocByUrl(
@@ -32,33 +104,18 @@ export class HTMLAnalyzer {
     let parsedHtml = parse(doc, {
       lowerCaseTagName: false, // convert tag name to lower case (hurts performance heavily)
       comment: false, // retrieve comments (hurts performance slightly)
-      voidTag: {
-        tags: [
-          "area",
-          "base",
-          "br",
-          "col",
-          "embed",
-          "hr",
-          "img",
-          "input",
-          "link",
-          "meta",
-          "param",
-          "source",
-          "track",
-          "wbr",
-        ], // optional and case insensitive, default value is ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr']
-        closingSlash: true, // optional, default false. void tag serialisation, add a final slash <br/>
-      },
-      blockTextElements: {
-        script: false, // keep text content when parsing
-        noscript: true, // keep text content when parsing
-        style: false, // keep text content when parsing
-        pre: true, // keep text content when parsing
-      },
     });
 
     return parsedHtml;
+  }
+}
+
+export class DateRegexFormat {
+  regex: string;
+  dateFormat: string;
+
+  constructor(regex: string, dateFormat: string) {
+    this.regex = regex;
+    this.dateFormat = dateFormat;
   }
 }
