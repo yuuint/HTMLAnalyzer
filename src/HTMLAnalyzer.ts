@@ -17,7 +17,7 @@ export class HTMLAnalyzer {
     targetUrl: string,
     options: AnalyzerOptions,
     postDocAdapter: Function
-  ): Promise<PostDoc> {
+  ): Promise<Array<PostDoc>> {
     let analyzedDoc = await this.getHtmlDocByUrl(targetUrl);
     analyzedDoc.parsedHtml = this.getParsedHtml(analyzedDoc.siteData);
     analyzedDoc.selectedElements = analyzedDoc.parsedHtml.querySelectorAll(

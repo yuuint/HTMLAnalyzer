@@ -1,6 +1,6 @@
 {
   "name": "@ynetlabo/htmlanalyzer",
-  "version": "0.2.00",
+  "version": "0.2.03",
   "description": "a tool for the npm package to easily analysis a html document.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

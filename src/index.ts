@@ -1,6 +1,6 @@
 import { HTMLAnalyzer } from "./HTMLAnalyzer";
-import { AnalyzedDoc } from "./AnalyzedDoc";
-export { HTMLAnalyzer, AnalyzedDoc };
+import { AnalyzedDoc, ArticleDoc } from "./AnalyzedDoc";
+export { HTMLAnalyzer, AnalyzedDoc, ArticleDoc };
 
 // const otaru = HTMLAnalyzer.getAnalyzedDocByUrl(
 //   "https://otaru-aq.jp/choineta/news_taxonomy/oshirase",
@@ -9,7 +9,9 @@ export { HTMLAnalyzer, AnalyzedDoc };
 // );
 // console.log(
 //   otaru.then((doc) => {
-//     console.log(JSON.stringify(doc));
+//     doc.forEach((result) => {
+//       console.log(JSON.stringify(result));
+//     });
 //   })
 // );
 
