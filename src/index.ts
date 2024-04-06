@@ -46,3 +46,19 @@ export { HTMLAnalyzer, AnalyzedDoc, ArticleDoc };
 //     console.log(JSON.stringify(doc));
 //   })
 // );
+
+// const marine = HTMLAnalyzer.getAnalyzedDocByUrl(
+//   "https://www.city.asahikawa.hokkaido.jp/asahiyamazoo/index.html",
+//   {
+//     selectQuery: ".block-news .content li",
+//     titleSelector: ".headline",
+//     descriptionSelector: ".headline",
+//     dateSelector: ".headline",
+//   },
+//   HTMLAnalyzer.CustomBlockAdapter
+// );
+// console.log(
+//   marine.then((doc) => {
+//     console.log(JSON.stringify(doc));
+//   })
+// );

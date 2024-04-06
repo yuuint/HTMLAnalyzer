@@ -69,22 +69,25 @@ export class HTMLAnalyzer {
 
   private static guessDate(sentence: string): Date {
     const dateRegexFormats: Array<DateRegexFormat> = [
+      new DateRegexFormat("[0-9]{4}/[0-9]{1,2}/[0-9]{1,2}", "yyyy/M/d"),
       new DateRegexFormat("[0-9]{4}.[0-9]{1,2}.[0-9]{1,2}", "yyyy.M.d"),
+      new DateRegexFormat("[0-9]{4}年[0-9]{1,2}月[0-9]{1,2}日", "yyyy年M月d日"),
+      new DateRegexFormat("[0-9]{1,2}月[0-9]{1,2}日", "M月d日"),
     ];
 
     // let matchStr: string = "";
-    let res: DateTimeMaybeValid = DateTime.now();
-    dateRegexFormats.forEach((dateRegexFormat) => {
+    let res: DateTimeMaybeValid = DateTime.fromISO("2020-01-01");
+    for (const dateRegexFormat of dateRegexFormats) {
       let regex = new RegExp(dateRegexFormat.regex);
       let finds: Array<string> = regex.exec(sentence) ?? [];
-      finds.forEach((find) => {
+      for (const find of finds) {
         res = DateTime.fromFormat(find, dateRegexFormat.dateFormat);
-        if (res) {
-          return res;
+        if (res.isValid) {
+          return res.toJSDate();
         }
-      });
-    });
-    return res.toJSDate();
+      }
+    }
+    return DateTime.fromISO("2020-01-01").toJSDate();
   }
 
   private static async getHtmlDocByUrl(
